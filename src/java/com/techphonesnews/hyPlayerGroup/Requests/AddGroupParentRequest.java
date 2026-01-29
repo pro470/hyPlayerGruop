@@ -2,7 +2,7 @@ package com.techphonesnews.hyPlayerGroup.Requests;
 
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
-public final record AddGroupParentRequest(String Parent, String Child) implements PlayerGroupGroupChangeRequest {
+public record AddGroupParentRequest(String Parent, String Child) implements PlayerGroupGroupChangeRequest {
 
 
     @Override

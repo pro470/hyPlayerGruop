@@ -7,7 +7,7 @@ import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
 import java.util.Set;
 
-public final record RemoveGroupPermissionRequest(String groupName,
+public record RemoveGroupPermissionRequest(String groupName,
                                                  Set<String> permissions) implements PlayerGroupGroupChangeRequest {
     @Override
     public void apply(PlayerGroupDAG dag) {

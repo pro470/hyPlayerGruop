@@ -6,7 +6,7 @@ import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
 import java.util.Set;
 
-public final record AddGroupPermissonRequest(String groupName,
+public record AddGroupPermissonRequest(String groupName,
                                              Set<String> permissions) implements PlayerGroupGroupChangeRequest {
     @Override
     public void apply(PlayerGroupDAG dag) {
