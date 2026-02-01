@@ -9,10 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-final class PlayerGroupDAGGroup {
+public final class PlayerGroupDAGGroup {
 
     public static final Codec<PlayerGroupDAGGroup> CODEC;
-    private final UUID id;
+    private UUID id;
     private String name;
 
     private final Set<UUID> parents = new HashSet<>();
@@ -26,8 +26,11 @@ final class PlayerGroupDAGGroup {
         this.id = id;
     }
 
+    private void setId(UUID id) {
+        this.id = id;
+    }
+
     public PlayerGroupDAGGroup() {
-        this.id = null;
     }
 
     public UUID id() {
@@ -101,7 +104,7 @@ final class PlayerGroupDAGGroup {
                                 "Id",
                                 Codec.UUID_STRING
                         ),
-                        (group, id) -> group = new PlayerGroupDAGGroup(id),
+                        PlayerGroupDAGGroup::setId,
                         PlayerGroupDAGGroup::id
                 ).add()
                 .append(

@@ -3,15 +3,21 @@ package com.techphonesnews.hyPlayerGroup.Group;
 import javax.annotation.Nonnull;
 import java.util.*;
 
-public class PlayerGroupDAGFlat {
+public record PlayerGroupDAGFlat(Map<UUID, PlayerGroupGroupData> groups, Map<String, UUID> groupsByName,
+                                 PlayerGroupPlayerData players) {
 
-    private final Map<UUID, PlayerGroupGroupData> groups;
-
-    private final PlayerGroupPlayerData players;
-
-    public PlayerGroupDAGFlat(@Nonnull Map<UUID, PlayerGroupGroupData> groups, @Nonnull PlayerGroupPlayerData players) {
-        this.groups = Map.copyOf(groups);
+    public PlayerGroupDAGFlat(@Nonnull Map<UUID, PlayerGroupGroupData> groups, @Nonnull Map<String, UUID> groupsByName, @Nonnull PlayerGroupPlayerData players) {
+        this.groups = Collections.unmodifiableMap(groups);
+        this.groupsByName = Collections.unmodifiableMap(groupsByName);
         this.players = players;
+    }
+
+    public PlayerGroupGroupData getGroup(@Nonnull String name) {
+        UUID id = groupsByName.get(name);
+        if (id != null) {
+            return groups.get(id);
+        }
+        return null;
     }
 
     public PlayerGroupGroupData getGroup(@Nonnull UUID id) {
@@ -39,12 +45,11 @@ public class PlayerGroupDAGFlat {
     }
 
     public Set<String> getGroupPermissions(String group) {
-        for (PlayerGroupGroupData playerGroupGroupData : groups.values()) {
-            if (playerGroupGroupData.name().equals(group)) {
-                return playerGroupGroupData.permissions();
-            }
+        UUID id = groupsByName.get(group);
+        if (id != null) {
+            return groups.get(id).permissions();
         }
-        return null;
+        return Set.of();
 
     }
 }

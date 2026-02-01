@@ -7,7 +7,7 @@ plugins {
     // So if you build this project with "shadowJar" the JAR file name will be:
     // "hytale-plugin-template-1.0.0-all.jar"
     id("com.gradleup.shadow") version ("9.3.1")
-    id("eu.koboo.pluginmanifest") version ("1.0.25")
+    id("eu.koboo.pluginmanifest") version ("1.0.26")
 }
 
 group = "com.techphonesnews"
