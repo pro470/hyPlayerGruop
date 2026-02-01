@@ -14,6 +14,7 @@ public final class PlayerGroupDAG {
     private final Map<UUID, PlayerGroupDAGGroup> groups = new HashMap<>();
     private final Map<String, UUID> groupsByName = new HashMap<>();
     private final PlayerGroupDAGPlayers players = new PlayerGroupDAGPlayers();
+    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     public static final BuilderCodec<PlayerGroupDAG> CODEC;
 
@@ -115,6 +116,7 @@ public final class PlayerGroupDAG {
     }
 
     public void addParent(String ParentName, String ChildName) {
+        LOGGER.atWarning().log("NO_CHECK parent " + ParentName + " to " + ChildName);
         UUID parentId = groupsByName.get(ParentName);
         UUID childId = groupsByName.get(ChildName);
         if (parentId == null || childId == null) {
@@ -137,6 +139,7 @@ public final class PlayerGroupDAG {
         if (parent == null || child == null) {
             return;
         }
+        LOGGER.atWarning().log("Adding parent " + parent.name() + " to " + child.name());
         child.addParent(ParentId);
         parent.addChild(ChildId);
     }

@@ -31,6 +31,16 @@ dependencies {
     compileOnly("com.hypixel.hytale:Server:2026.01.22-6f8bdbdc4")
 }
 
+dependencies {
+    // JUnit 5 (Jupiter)
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}
 pluginManifest {
     // Nothing to configure.
     // The plugin already does most of the things for us. :)
@@ -87,7 +97,7 @@ sourceSets {
     }
     // We don't need test sources, we test on the server itself.
     test {
-        java.setSrcDirs(emptyList<String>())
+        java.setSrcDirs(listOf("src/test/java"))
         resources.setSrcDirs(emptyList<String>())
     }
 }

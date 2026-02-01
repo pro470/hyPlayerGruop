@@ -60,7 +60,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
         this.dagFlat.set(PlayerGroupDAG.buildFlat(dag, dagFlat.get(), new PlayerGroupAffected(dag.groups(), dag.groups(), dag.groups(), dag.groups())));
         PermissionsModule.get().addProvider(provider);
         Universe.get().getEntityStoreRegistry().registerSystem(new HandleRequestSystem());
-        this.getEntityStoreRegistry().registerSystem(new PlayerGroupSimulationSystem(queue, 10));
+        this.getEntityStoreRegistry().registerSystem(new PlayerGroupSimulationSystem(queue, 100));
         getLogger().atInfo().log("MyPlugin was successfully setup!");
     }
 
@@ -144,7 +144,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
 
                                         PlayerGroupDAGFlat bFlat = PlayerGroupDAG.buildFlat(dag.get(), dagFlat.get(), affected);
                                         dagFlat.set(bFlat);
-                                        PlayerGroupValidator.validate(bFlat, debugMessages);
+                                        PlayerGroupValidator.validate(bFlat);
                                         return new FinishedBuild(bFlat, requests);
                                     }
                             )
