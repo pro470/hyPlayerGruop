@@ -15,6 +15,8 @@ import com.hypixel.hytale.sneakythrow.SneakyThrow;
 import com.techphonesnews.hyPlayerGroup.Group.*;
 import com.techphonesnews.hyPlayerGroup.Permissions.PlayerGroupPermissionsProvider;
 import com.techphonesnews.hyPlayerGroup.Requests.PlayerGroupGroupChangeRequest;
+import com.techphonesnews.hyPlayerGroup.Validator.PlayerGroupValidator;
+import com.techphonesnews.hyPlayerGroup.simTest.PlayerGroupSimulationSystem;
 
 import javax.annotation.Nonnull;
 import java.nio.file.Files;
@@ -58,6 +60,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
         this.dagFlat.set(PlayerGroupDAG.buildFlat(dag, dagFlat.get(), new PlayerGroupAffected(dag.groups(), dag.groups(), dag.groups(), dag.groups())));
         PermissionsModule.get().addProvider(provider);
         Universe.get().getEntityStoreRegistry().registerSystem(new HandleRequestSystem());
+        this.getEntityStoreRegistry().registerSystem(new PlayerGroupSimulationSystem(queue, 10));
         getLogger().atInfo().log("MyPlugin was successfully setup!");
     }
 
@@ -126,6 +129,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
             buildingDAGFlat = CompletableFuture.supplyAsync(
                             SneakyThrow.sneakySupplier(
                                     () -> {
+                                        List<String> debugMessages = new ArrayList<>();
                                         PlayerGroupAffected affected = new PlayerGroupAffected(new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
                                         while (!queue.isEmpty()) {
                                             PlayerGroupGroupChangeRequest request = queue.poll();
@@ -135,10 +139,12 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
                                             affected.permissions().addAll(request.affected().permissions());
                                             affected.directMembers().addAll(request.affected().directMembers());
                                             requests.add(request);
+                                            debugMessages.add(request.debugMessage());
                                         }
 
                                         PlayerGroupDAGFlat bFlat = PlayerGroupDAG.buildFlat(dag.get(), dagFlat.get(), affected);
                                         dagFlat.set(bFlat);
+                                        PlayerGroupValidator.validate(bFlat, debugMessages);
                                         return new FinishedBuild(bFlat, requests);
                                     }
                             )
@@ -169,7 +175,6 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
                                             request.event();
                                         }
 
-                                        requests.clear();
                                         dag.save();
                                     }
                             )
