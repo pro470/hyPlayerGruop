@@ -11,7 +11,6 @@ import java.util.function.Function;
 
 public final class PlayerGroupDAG {
     public static String name = "PlayerGroupDAG";
-    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
     private final Map<UUID, PlayerGroupDAGGroup> groups = new HashMap<>();
     private final Map<String, UUID> groupsByName = new HashMap<>();
     private final PlayerGroupDAGPlayers players = new PlayerGroupDAGPlayers();
@@ -92,11 +91,9 @@ public final class PlayerGroupDAG {
             players.playersGroups().put(uuid, new HashSet<>());
             member = players.playersGroups().get(uuid);
             if (member != null) {
-                LOGGER.atInfo().log("Added player to group");
                 member.add(groupId);
             }
         } else {
-            LOGGER.atInfo().log("Player already has a group");
             member.add(groupId);
         }
     }
@@ -356,7 +353,6 @@ public final class PlayerGroupDAG {
             } else {
                 if (group.id() == null) {
                     old = null;
-                    LOGGER.atInfo().log("Group id is null");
                 } else {
                     old = flatGroups.get(group.id());
                 }
