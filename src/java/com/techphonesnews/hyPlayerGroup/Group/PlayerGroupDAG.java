@@ -319,36 +319,35 @@ public final class PlayerGroupDAG {
 
         PlayerGroupPlayerData playerData = new PlayerGroupPlayerData(dag.players.playersGroups(), dag.players.playersPermissions());
 
+        Function<UUID, Collection<UUID>> safeParents =
+                g -> {
+                    PlayerGroupDAGGroup gg = dag.groups.get(g);
+                    return gg != null ? gg.parents() : Set.of();
+                };
+
+        Function<UUID, Collection<UUID>> safeChildren =
+                g -> {
+                    PlayerGroupDAGGroup gg = dag.groups.get(g);
+                    return gg != null ? gg.children() : Set.of();
+                };
+
+        NextProvider safeParentsNext =
+                g -> {
+                    PlayerGroupDAGGroup gg = dag.groups.get(g);
+                    return gg != null ? gg.parents() : Set.of();
+                };
+
+        NextProvider safeChildrenNext =
+                g -> {
+                    PlayerGroupDAGGroup gg = dag.groups.get(g);
+                    return gg != null ? gg.children() : Set.of();
+                };
+        Function<UUID, Collection<String>> safePermissions =
+                g -> {
+                    PlayerGroupDAGGroup gg = dag.groups.get(g);
+                    return gg != null ? gg.permissions() : Set.of();
+                };
         for (PlayerGroupDAGGroup group : dag.groups.values()) {
-
-            Function<UUID, Collection<UUID>> safeParents =
-                    g -> {
-                        PlayerGroupDAGGroup gg = dag.groups.get(g);
-                        return gg != null ? gg.parents() : Set.of();
-                    };
-
-            Function<UUID, Collection<UUID>> safeChildren =
-                    g -> {
-                        PlayerGroupDAGGroup gg = dag.groups.get(g);
-                        return gg != null ? gg.children() : Set.of();
-                    };
-
-            NextProvider safeParentsNext =
-                    g -> {
-                        PlayerGroupDAGGroup gg = dag.groups.get(g);
-                        return gg != null ? gg.parents() : Set.of();
-                    };
-
-            NextProvider safeChildrenNext =
-                    g -> {
-                        PlayerGroupDAGGroup gg = dag.groups.get(g);
-                        return gg != null ? gg.children() : Set.of();
-                    };
-            Function<UUID, Collection<String>> safePermissions =
-                    g -> {
-                        PlayerGroupDAGGroup gg = dag.groups.get(g);
-                        return gg != null ? gg.permissions() : Set.of();
-                    };
 
             PlayerGroupGroupData old;
             Map<UUID, PlayerGroupGroupData> flatGroups = flat.groups();
