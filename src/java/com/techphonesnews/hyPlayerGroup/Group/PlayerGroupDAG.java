@@ -247,7 +247,9 @@ public final class PlayerGroupDAG {
 
             Collection<UUID> nextNodes = next.next(current);
             if (nextNodes == null) continue;
-            queue.addAll(nextNodes);
+            for (UUID n : nextNodes) {
+                queue.push(n);
+            }
         }
 
         return false;
