@@ -1,4 +1,4 @@
-package com.techphonesnews.hyPlayerGroup.Validator;
+package com.techphonesnews.hyPlayerGroup.validator;
 
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAGFlat;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupGroupData;
