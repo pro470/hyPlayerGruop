@@ -4,7 +4,6 @@ import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.map.MapCodec;
-import com.hypixel.hytale.logger.HytaleLogger;
 
 import java.util.*;
 import java.util.function.Function;
@@ -14,7 +13,6 @@ public final class PlayerGroupDAG {
     private final Map<UUID, PlayerGroupDAGGroup> groups = new HashMap<>();
     private final Map<String, UUID> groupsByName = new HashMap<>();
     private final PlayerGroupDAGPlayers players = new PlayerGroupDAGPlayers();
-    private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
 
     public static final BuilderCodec<PlayerGroupDAG> CODEC;
 
@@ -116,7 +114,6 @@ public final class PlayerGroupDAG {
     }
 
     public void addParent(String ParentName, String ChildName) {
-        LOGGER.atWarning().log("NO_CHECK parent " + ParentName + " to " + ChildName);
         UUID parentId = groupsByName.get(ParentName);
         UUID childId = groupsByName.get(ChildName);
         if (parentId == null || childId == null) {
@@ -139,7 +136,6 @@ public final class PlayerGroupDAG {
         if (parent == null || child == null) {
             return;
         }
-        LOGGER.atWarning().log("Adding parent " + parent.name() + " to " + child.name());
         child.addParent(ParentId);
         parent.addChild(ChildId);
     }
@@ -232,7 +228,7 @@ public final class PlayerGroupDAG {
         );
     }
 
-    private static Boolean dfs(
+    static Boolean dfs(
             UUID id,
             Set<UUID> visited,
             NextProvider next,
@@ -250,7 +246,9 @@ public final class PlayerGroupDAG {
 
             Collection<UUID> nextNodes = next.next(current);
             if (nextNodes == null) continue;
-            queue.addAll(nextNodes);
+            for (UUID n : nextNodes) {
+                queue.push(n);
+            }
         }
 
         return false;
@@ -463,12 +461,12 @@ public final class PlayerGroupDAG {
     }
 
     @FunctionalInterface
-    private interface NextProvider {
+    interface NextProvider {
         Collection<UUID> next(UUID id);
     }
 
     @FunctionalInterface
-    private interface VisitConsumer {
+    interface VisitConsumer {
         Boolean visit(UUID id);
     }
 }

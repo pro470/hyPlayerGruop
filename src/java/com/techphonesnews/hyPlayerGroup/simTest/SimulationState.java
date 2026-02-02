@@ -1,22 +1,31 @@
 package com.techphonesnews.hyPlayerGroup.simTest;
 
+import org.apache.commons.rng.simple.RandomSource;
+import org.apache.commons.rng.UniformRandomProvider;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class SimulationState {
 
-    // Gruppen, die aktuell wirklich im DAG existieren
     final Set<String> aliveGroups = new HashSet<>();
 
-    // Alle Gruppen-IDs, die jemals existiert haben oder absichtlich "null" sind
     final Set<String> knownGroups = new HashSet<>();
 
     final Set<UUID> players = new HashSet<>();
 
     static final int MAX_ALIVE_GROUPS = 150;
-    static final double ALIVE_RATIO = 0.6; // 60 % alive, 40 % null
+    static final double ALIVE_RATIO = 0.6;
 
-    final Random random = new Random();
+    final UniformRandomProvider random;
+
+    public SimulationState() {
+        this.random = RandomSource.XO_RO_SHI_RO_128_PP.create();
+    }
+
+    public SimulationState(long seed) {
+        this.random = RandomSource.XO_RO_SHI_RO_128_PP.create(seed);
+    }
 
     boolean canCreateGroup() {
         return aliveGroups.size() < MAX_ALIVE_GROUPS;
@@ -50,30 +59,24 @@ public final class SimulationState {
     }
 
     private String randomDeadGroup() {
-        return knownGroups.stream()
+        List<String> deadGroups = knownGroups.stream()
                 .filter(g -> !aliveGroups.contains(g))
-                .skip(random.nextInt(
-                        Math.max(1,
-                                knownGroups.size() - aliveGroups.size())))
-                .findFirst()
-                .orElse(null);
+                .toList();
+
+        if (deadGroups.isEmpty()) return null;
+
+        int idx = random.nextInt(deadGroups.size());
+        return deadGroups.get(idx);
     }
-    /* -----------------------------
-       Random Auswahl (BLIND)
-     ----------------------------- */
 
     String randomGroup() {
-        return knownGroups.stream()
-                .skip(random.nextInt(knownGroups.size()))
-                .findFirst()
-                .orElseThrow();
+        List<String> list = new ArrayList<>(knownGroups);
+        return list.get(random.nextInt(list.size()));
     }
 
     UUID randomPlayer() {
-        return players.stream()
-                .skip(random.nextInt(players.size()))
-                .findFirst()
-                .orElseThrow();
+        List<UUID> list = new ArrayList<>(players);
+        return list.get(random.nextInt(list.size()));
     }
 
     UUID getOrCreateRandomPlayer() {
@@ -93,6 +96,4 @@ public final class SimulationState {
         }
         return set;
     }
-
-
 }
