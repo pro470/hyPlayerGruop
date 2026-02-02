@@ -1,9 +1,8 @@
-package com.techphonesnews.hyPlayerGroup.validator;
+package com.techphonesnews.hyPlayerGroup.Validator;
 
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAGFlat;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupGroupData;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupPlayerData;
-import com.techphonesnews.hyPlayerGroup.Validator.PlayerGroupValidator;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
