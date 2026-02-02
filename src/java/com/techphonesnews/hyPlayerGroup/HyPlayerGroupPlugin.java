@@ -15,6 +15,7 @@ import com.hypixel.hytale.sneakythrow.SneakyThrow;
 import com.techphonesnews.hyPlayerGroup.Group.*;
 import com.techphonesnews.hyPlayerGroup.Permissions.PlayerGroupPermissionsProvider;
 import com.techphonesnews.hyPlayerGroup.Requests.PlayerGroupGroupChangeRequest;
+import com.techphonesnews.hyPlayerGroup.Requests.TestSuccesfulBuildFlatRequest;
 import com.techphonesnews.hyPlayerGroup.Validator.PlayerGroupValidator;
 import com.techphonesnews.hyPlayerGroup.simTest.PlayerGroupSimulationSystem;
 
@@ -174,6 +175,9 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
                                         for (PlayerGroupGroupChangeRequest request : finished.requests) {
                                             request.event();
                                         }
+                                        requests.add(
+                                                new TestSuccesfulBuildFlatRequest()
+                                        );
 
                                         dag.save();
                                     }
