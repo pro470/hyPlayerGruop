@@ -28,7 +28,7 @@ repositories {
 
 dependencies {
     // Here you can add your own dependencies.
-    compileOnly("com.hypixel.hytale:Server:2026.01.22-6f8bdbdc4")
+    compileOnly("com.hypixel.hytale:Server:2026.01.28-87d03be09")
 
     implementation("org.apache.commons:commons-rng-simple:1.5")
 }
@@ -36,7 +36,7 @@ dependencies {
 dependencies {
     // JUnit 5 (Jupiter)
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
-    testRuntimeOnly("com.hypixel.hytale:Server:2026.01.22-6f8bdbdc4")
+    testRuntimeOnly("com.hypixel.hytale:Server:2026.01.28-87d03be09")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

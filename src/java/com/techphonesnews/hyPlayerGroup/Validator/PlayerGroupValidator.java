@@ -1,13 +1,17 @@
 package com.techphonesnews.hyPlayerGroup.Validator;
 
+import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAGFlat;
+import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAGGroup;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupGroupData;
 
 import java.util.*;
 
+import static com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG.dfs;
+
 public class PlayerGroupValidator {
 
-    public static void validate(PlayerGroupDAGFlat flat) {
+    public static void validate(PlayerGroupDAGFlat flat, PlayerGroupDAG dag) {
         validateAncestorDescendantExistence(flat);
         validateNoSelfReachability(flat);
         validateAncestorsAndDescendants(flat);
@@ -19,6 +23,13 @@ public class PlayerGroupValidator {
         validateGroupNamesAreUnique(flat);
         validateAllGroupsAppearInGroupsByName(flat);
         validatePermissionInheritance(flat);
+        validateFlatGroupsMatchDag(dag, flat);
+        validateGroupNamesMatchDag(dag, flat);
+        validateDescendantsMatchDag(dag, flat);
+        validateAncestorsMatchDag(dag, flat);
+        validateDirectMembersMatchDag(dag, flat);
+        validatePlayersMatchDag(dag, flat);
+        validatePermissionsMatchDagWithInheritance(dag, flat);
     }
 
     public static void validatedirectMembersInPlayersGroups(PlayerGroupDAGFlat flat) {
@@ -294,4 +305,176 @@ public class PlayerGroupValidator {
         }
     }
 
+    static void validateFlatGroupsMatchDag(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        Set<UUID> dagIds = dag.groups();
+        Set<UUID> flatIds = flat.groups().keySet();
+
+        if (!dagIds.equals(flatIds)) {
+            throw new AssertionError(
+                    "Group ID mismatch between DAG and Flat\n" +
+                            "DAG: " + dagIds + "\n" +
+                            "Flat: " + flatIds
+            );
+        }
+    }
+
+    static void validateGroupNamesMatchDag(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        for (PlayerGroupDAGGroup dagGroup : dag.groupsValues()) {
+            PlayerGroupGroupData flatGroup =
+                    flat.groups().get(dagGroup.id());
+
+            if (flatGroup == null) {
+                throw new AssertionError("Missing flat group " + dagGroup.id());
+            }
+
+            if (!dagGroup.getName().equals(flatGroup.name())) {
+                throw new AssertionError(
+                        "Name mismatch for group " + dagGroup.id() +
+                                ": DAG=" + dagGroup.getName() +
+                                ", Flat=" + flatGroup.name()
+                );
+            }
+
+            UUID byName = flat.groupsByName().get(flatGroup.name());
+            if (!dagGroup.id().equals(byName)) {
+                throw new AssertionError(
+                        "groupsByName incorrect for " + flatGroup.name()
+                );
+            }
+        }
+    }
+
+    static void validateDescendantsMatchDag(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        for (PlayerGroupDAGGroup dagGroup : dag.groupsValues()) {
+            Set<UUID> dfsDesc = new HashSet<>();
+
+            dfs(
+                    dagGroup.id(),
+                    new HashSet<>(),
+                    id -> dag.getGroup(id).children(),
+                    id -> {
+                        if (!id.equals(dagGroup.id())) dfsDesc.add(id);
+                        return false;
+                    }
+            );
+
+            Set<UUID> flatDesc =
+                    flat.groups().get(dagGroup.id()).descendants();
+
+            if (!dfsDesc.equals(flatDesc)) {
+                throw new AssertionError(
+                        "Descendants mismatch for group " + dagGroup.getName() +
+                                "\nDAG=" + dfsDesc +
+                                "\nFlat=" + flatDesc
+                );
+            }
+        }
+    }
+
+    static void validateAncestorsMatchDag(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        for (PlayerGroupDAGGroup dagGroup : dag.groupsValues()) {
+            Set<UUID> dfsAnc = new HashSet<>();
+
+            dfs(
+                    dagGroup.id(),
+                    new HashSet<>(),
+                    id -> dag.getGroup(id).parents(),
+                    id -> {
+                        if (!id.equals(dagGroup.id())) dfsAnc.add(id);
+                        return false;
+                    }
+            );
+
+            Set<UUID> flatAnc =
+                    flat.groups().get(dagGroup.id()).ancestors();
+
+            if (!dfsAnc.equals(flatAnc)) {
+                throw new AssertionError(
+                        "Ancestors mismatch for group " + dagGroup.getName()
+                );
+            }
+        }
+    }
+
+    static void validateDirectMembersMatchDag(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        for (var dagGroup : dag.groupsValues()) {
+            Set<UUID> dagMembers = dagGroup.members();
+            Set<UUID> flatMembers =
+                    flat.groups().get(dagGroup.id()).directMembers();
+
+            if (!dagMembers.equals(flatMembers)) {
+                throw new AssertionError(
+                        "Direct members mismatch for group " + dagGroup.getName()
+                );
+            }
+        }
+    }
+
+    static void validatePlayersMatchDag(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        for (var entry : dag.getPlayerGroups().entrySet()) {
+            UUID player = entry.getKey();
+            Set<UUID> dagGroups = entry.getValue();
+
+            Set<UUID> flatGroups =
+                    flat.players().playersGroups().get(player);
+
+            if (!dagGroups.equals(flatGroups)) {
+                throw new AssertionError(
+                        "Player groups mismatch for player " + player
+                );
+            }
+        }
+    }
+
+    static void validatePermissionsMatchDagWithInheritance(
+            PlayerGroupDAG dag,
+            PlayerGroupDAGFlat flat
+    ) {
+        for (var dagGroup : dag.groupsValues()) {
+
+            Set<String> expected = new HashSet<>();
+
+            // DFS über parents inkl. self
+            dfs(
+                    dagGroup.id(),
+                    new HashSet<>(),
+                    id -> dag.getGroup(id).parents(),
+                    id -> {
+                        expected.addAll(
+                                dag.getGroup(id).permissions()
+                        );
+                        return false;
+                    }
+            );
+
+            Set<String> flatPerms =
+                    flat.groups().get(dagGroup.id()).permissions();
+
+            if (!expected.equals(flatPerms)) {
+                throw new AssertionError(
+                        "Permission mismatch for group " + dagGroup.getName() +
+                                "\nExpected=" + expected +
+                                "\nFlat=" + flatPerms
+                );
+            }
+        }
+    }
 }

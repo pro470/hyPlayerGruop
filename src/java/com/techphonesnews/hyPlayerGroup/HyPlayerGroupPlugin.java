@@ -145,7 +145,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
 
                                         PlayerGroupDAGFlat bFlat = PlayerGroupDAG.buildFlat(dag.get(), dagFlat.get(), affected);
                                         dagFlat.set(bFlat);
-                                        PlayerGroupValidator.validate(bFlat);
+                                        PlayerGroupValidator.validate(bFlat, dag.get());
                                         return new FinishedBuild(bFlat, requests);
                                     }
                             )

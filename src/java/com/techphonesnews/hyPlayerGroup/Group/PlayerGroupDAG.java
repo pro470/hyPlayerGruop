@@ -35,6 +35,11 @@ public final class PlayerGroupDAG {
         return id;
     }
 
+    public void addGroup(UUID id, PlayerGroupDAGGroup group) {
+        groups.put(id, group);
+        groupsByName.put(group.name(), id);
+    }
+
     public PlayerGroupDAGGroup getGroup(UUID id) {
         return groups.get(id);
     }
@@ -207,6 +212,14 @@ public final class PlayerGroupDAG {
         group.permissions().removeAll(permissions);
     }
 
+    public Map<UUID, Set<UUID>> getPlayerGroups() {
+        return players.playersGroups();
+    }
+
+    public Map<UUID, Set<String>> getPlayerPermissions() {
+        return players.playersPermissions();
+    }
+
     public void removePlayerPermissions(UUID player, Set<String> permissions) {
         Set<String> playerperms = players.playersPermissions().get(player);
         if (playerperms == null) {
@@ -228,7 +241,7 @@ public final class PlayerGroupDAG {
         );
     }
 
-    static Boolean dfs(
+    public static Boolean dfs(
             UUID id,
             Set<UUID> visited,
             NextProvider next,
@@ -452,6 +465,10 @@ public final class PlayerGroupDAG {
                 .build();
     }
 
+    public Collection<PlayerGroupDAGGroup> groupsValues() {
+        return groups.values();
+    }
+
     private enum VisitType {
         ENTER,
         EXIT
@@ -461,12 +478,12 @@ public final class PlayerGroupDAG {
     }
 
     @FunctionalInterface
-    interface NextProvider {
+    public interface NextProvider {
         Collection<UUID> next(UUID id);
     }
 
     @FunctionalInterface
-    interface VisitConsumer {
+    public interface VisitConsumer {
         Boolean visit(UUID id);
     }
 }
