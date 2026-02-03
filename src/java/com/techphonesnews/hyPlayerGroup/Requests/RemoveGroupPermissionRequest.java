@@ -4,7 +4,6 @@ import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.permissions.GroupPermissionChangeEvent;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
-import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupGroupData;
 import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
 import javax.annotation.Nonnull;
@@ -12,11 +11,22 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public record RemoveGroupPermissionRequest(String groupName,
-                                           Set<String> permissions) implements PlayerGroupGroupChangeRequest {
+public final class RemoveGroupPermissionRequest implements PlayerGroupGroupChangeRequest {
+
+    private String groupName;
+    private Set<String> permissions;
+
+    private UUID groupId;
+
+    public RemoveGroupPermissionRequest(String groupName, Set<String> permissions) {
+        this.groupName = groupName;
+        this.permissions = permissions;
+    }
+
     @Override
     public void apply(PlayerGroupDAG dag) {
         dag.removeGroupPermissions(groupName, permissions);
+        groupId = dag.getGroupId(groupName);
     }
 
     @Override
@@ -39,12 +49,16 @@ public record RemoveGroupPermissionRequest(String groupName,
     @Override
     @Nonnull
     public PlayerGroupAffected affected() {
-        PlayerGroupGroupData group = HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName);
-        if (group == null)
-            return PlayerGroupAffected.EMPTY;
-        Set<UUID> children = new HashSet<>(group.descendants());
-        children.add(group.id());
-        return new PlayerGroupAffected(Set.of(), Set.of(), Set.copyOf(children), Set.of());
+        Set<UUID> children = new HashSet<>();
+        if (groupId != null) {
+            children.add(groupId);
+        }
+
+        if (HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName) != null) {
+            children.addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName).descendants());
+
+        }
+        return new PlayerGroupAffected(Set.of(), Set.of(), children, Set.of());
     }
 
 }
