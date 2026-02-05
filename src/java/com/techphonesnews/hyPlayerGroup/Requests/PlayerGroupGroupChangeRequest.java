@@ -3,8 +3,6 @@ package com.techphonesnews.hyPlayerGroup.Requests;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
-import javax.annotation.Nonnull;
-
 sealed public interface PlayerGroupGroupChangeRequest permits AddGroupParentRequest, AddGroupPermissonRequest, AddPlayerPermissionRequest, AddPlayerToGroupRequest, CreateGroupRequest, DisbandGroupRequest, RemoveGroupParentRequest, RemoveGroupPermissionRequest, RemovePlayerFromGroupRequest, RemovePlayerPermissonRequest, TestSuccesfulBuildFlatRequest {
     void apply(PlayerGroupDAG dag);
 
@@ -12,7 +10,6 @@ sealed public interface PlayerGroupGroupChangeRequest permits AddGroupParentRequ
 
     String debugMessage();
 
-    @Nonnull
-    PlayerGroupAffected affected();
+    void affected(PlayerGroupAffected affected);
 
 }

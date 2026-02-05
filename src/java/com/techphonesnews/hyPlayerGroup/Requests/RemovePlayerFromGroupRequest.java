@@ -43,11 +43,10 @@ public final class RemovePlayerFromGroupRequest implements PlayerGroupGroupChang
     }
 
     @Override
-    @Nonnull
-    public PlayerGroupAffected affected() {
+    public void affected(PlayerGroupAffected affected) {
 
         if (groupId == null)
-            return PlayerGroupAffected.EMPTY;
-        return new PlayerGroupAffected(Set.of(), Set.of(), Set.of(), Set.of(groupId));
+            return;
+        affected.directMembers().add(groupId);
     }
 }

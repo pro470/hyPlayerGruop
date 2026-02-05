@@ -35,8 +35,7 @@ public record AddPlayerPermissionRequest(UUID player,
     }
 
     @Override
-    @Nonnull
-    public PlayerGroupAffected affected() {
-        return PlayerGroupAffected.EMPTY;
+    public void affected(PlayerGroupAffected affected) {
+        affected.playersPermissions().add(player);
     }
 }

@@ -6,6 +6,7 @@ import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,24 +42,21 @@ public final class RemoveGroupParentRequest implements PlayerGroupGroupChangeReq
     }
 
     @Override
-    @Nonnull
-    public PlayerGroupAffected affected() {
-        Set<UUID> parents = new HashSet<>();
-        Set<UUID> children = new HashSet<>();
+    public void affected(PlayerGroupAffected affected) {
         if (parentId != null) {
-            parents.add(parentId);
+            affected.descendants().add(parentId);
         }
         if (childId != null) {
-            children.add(childId);
+            affected.ancestors().add(childId);
+            affected.permissions().add(childId);
         }
         if (HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Parent) != null) {
-            parents.addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Parent).ancestors());
+            affected.descendants().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Parent)).ancestors());
 
         }
         if (HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child) != null) {
-            children.addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child).descendants());
-
+            affected.ancestors().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child)).descendants());
+            affected.permissions().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child)).descendants());
         }
-        return new PlayerGroupAffected(children, parents, children, Set.of());
     }
 }
