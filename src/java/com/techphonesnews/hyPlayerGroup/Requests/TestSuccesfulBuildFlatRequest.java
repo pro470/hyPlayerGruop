@@ -3,8 +3,6 @@ package com.techphonesnews.hyPlayerGroup.Requests;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
-import javax.annotation.Nonnull;
-
 public record TestSuccesfulBuildFlatRequest() implements PlayerGroupGroupChangeRequest {
     @Override
     public void apply(PlayerGroupDAG dag) {
@@ -21,9 +19,7 @@ public record TestSuccesfulBuildFlatRequest() implements PlayerGroupGroupChangeR
         return "------------------------SUCCESSFUL BUILD------------------------";
     }
 
-    @Nonnull
     @Override
-    public PlayerGroupAffected affected() {
-        return PlayerGroupAffected.EMPTY;
+    public void affected(PlayerGroupAffected affected) {
     }
 }

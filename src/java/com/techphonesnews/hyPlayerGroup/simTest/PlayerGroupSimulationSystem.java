@@ -44,7 +44,9 @@ public final class PlayerGroupSimulationSystem
         LOGGER.atInfo().log("Players: " + state.players.size());
         LOGGER.atInfo().log("GroupsFlat: " + flat.groups().size());
 
-        for (int i = 0; i < requestsPerTick; i++) {
+        int randomrequests = state.random.nextInt(requestsPerTick + 1);
+
+        for (int i = 0; i < randomrequests; i++) {
             PlayerGroupGroupChangeRequest req =
                     RandomRequestFactory.create(state);
 

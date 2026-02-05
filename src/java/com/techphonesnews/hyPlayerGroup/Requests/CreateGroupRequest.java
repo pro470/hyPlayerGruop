@@ -23,9 +23,7 @@ public record CreateGroupRequest(String name) implements PlayerGroupGroupChangeR
         return "Creating group " + name;
     }
 
-    @Nonnull
     @Override
-    public PlayerGroupAffected affected() {
-        return PlayerGroupAffected.EMPTY;
+    public void affected(PlayerGroupAffected affected) {
     }
 }
