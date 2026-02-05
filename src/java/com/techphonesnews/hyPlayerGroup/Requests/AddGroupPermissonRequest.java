@@ -8,6 +8,7 @@ import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -47,17 +48,14 @@ public final class AddGroupPermissonRequest implements PlayerGroupGroupChangeReq
     }
 
     @Override
-    @Nonnull
-    public PlayerGroupAffected affected() {
-        Set<UUID> children = new HashSet<>();
+    public void affected(PlayerGroupAffected affected) {
         if (groupId != null) {
-            children.add(groupId);
+            affected.permissions().add(groupId);
         }
 
         if (HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName) != null) {
-            children.addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName).descendants());
+            affected.permissions().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName)).descendants());
 
         }
-        return new PlayerGroupAffected(Set.of(), Set.of(), children, Set.of());
     }
 }

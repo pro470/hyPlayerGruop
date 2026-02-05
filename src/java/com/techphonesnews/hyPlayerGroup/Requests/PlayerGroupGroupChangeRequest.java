@@ -12,7 +12,6 @@ sealed public interface PlayerGroupGroupChangeRequest permits AddGroupParentRequ
 
     String debugMessage();
 
-    @Nonnull
-    PlayerGroupAffected affected();
+    void affected(PlayerGroupAffected affected);
 
 }

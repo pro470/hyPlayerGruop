@@ -30,7 +30,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
 
     protected static HyPlayerGroupPlugin instance;
     private static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
-    private final AtomicReference<PlayerGroupDAGFlat> dagFlat = new AtomicReference<PlayerGroupDAGFlat>(new PlayerGroupDAGFlat(Map.of(), Map.of(), new PlayerGroupPlayerData(Map.of(), Map.of())));
+    private final AtomicReference<PlayerGroupDAGFlat> dagFlat = new AtomicReference<PlayerGroupDAGFlat>(new PlayerGroupDAGFlat(Map.of(), Map.of(), PlayerGroupPlayerData.NewPlayerGroupPlayerData(Map.of(), Map.of())));
     private final Config<PlayerGroupDAG> dag;
     private final ConcurrentLinkedQueue<PlayerGroupGroupChangeRequest> queue = new ConcurrentLinkedQueue<>();
     private final Path dataDirectory;
@@ -54,8 +54,9 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
     protected void setup() {
         LOGGER.atInfo().log("Setting up plugin " + this.getName());
         super.setup();
+        this.dag.save();
         PlayerGroupDAG dag = this.dag.get();
-        this.dagFlat.set(PlayerGroupDAG.buildFlat(dag, dagFlat.get(), new PlayerGroupAffected(dag.groups(), dag.groups(), dag.groups(), dag.groups())));
+        this.dagFlat.set(PlayerGroupDAG.buildFlat(dag, dagFlat.get(), new PlayerGroupAffected(dag.groups(), dag.groups(), dag.groups(), dag.groups(), dag.getPlayerPermissions().keySet())));
         PermissionsModule.get().addProvider(provider);
         Universe.get().getEntityStoreRegistry().registerSystem(new HandleRequestSystem());
         getLogger().atInfo().log("MyPlugin was successfully setup!");
@@ -64,6 +65,10 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
     @Override
     protected void start() {
         super.start();
+    }
+
+    public PlayerGroupPermissionsProvider getProvider() {
+        return provider;
     }
 
     public PlayerGroupDAGFlat getDagFlat() {
@@ -126,14 +131,11 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
             buildingDAGFlat = CompletableFuture.supplyAsync(
                             SneakyThrow.sneakySupplier(
                                     () -> {
-                                        PlayerGroupAffected affected = new PlayerGroupAffected(new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
+                                        PlayerGroupAffected affected = new PlayerGroupAffected(new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
                                         while (!queue.isEmpty()) {
                                             PlayerGroupGroupChangeRequest request = queue.poll();
                                             request.apply(dag.get());
-                                            affected.ancestors().addAll(request.affected().ancestors());
-                                            affected.descendants().addAll(request.affected().descendants());
-                                            affected.permissions().addAll(request.affected().permissions());
-                                            affected.directMembers().addAll(request.affected().directMembers());
+                                            request.affected(affected);
                                             requests.add(request);
                                         }
 
@@ -232,6 +234,6 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
         buildingDAGFlat = null;
 
         PlayerGroupDAG dag = this.dag.get();
-        this.dagFlat.set(PlayerGroupDAG.buildFlat(dag, dagFlat.get(), new PlayerGroupAffected(dag.groups(), dag.groups(), dag.groups(), dag.groups())));
+        this.dagFlat.set(PlayerGroupDAG.buildFlat(dag, dagFlat.get(), new PlayerGroupAffected(dag.groups(), dag.groups(), dag.groups(), dag.groups(), dag.getPlayerPermissions().keySet())));
     }
 }

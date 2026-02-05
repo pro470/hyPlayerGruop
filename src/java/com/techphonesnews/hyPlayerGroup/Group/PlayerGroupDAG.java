@@ -316,96 +316,146 @@ public final class PlayerGroupDAG {
         Map<UUID, Set<UUID>> descendantsCache = new HashMap<>();
         Map<UUID, Set<String>> permissionsCache = new HashMap<>();
 
-        PlayerGroupPlayerData playerData = new PlayerGroupPlayerData(dag.players.playersGroups(), dag.players.playersPermissions());
+        PlayerGroupPlayerData playerData;
+        Map<String, UUID> groupsByName;
+        if (!affected.isEmpty() || dag.groups().size() != flat.groups().size()) {
+            Function<UUID, Collection<UUID>> safeParents =
+                    g -> {
+                        PlayerGroupDAGGroup gg = dag.groups.get(g);
+                        return gg != null ? gg.parents() : Set.of();
+                    };
 
-        Function<UUID, Collection<UUID>> safeParents =
-                g -> {
-                    PlayerGroupDAGGroup gg = dag.groups.get(g);
-                    return gg != null ? gg.parents() : Set.of();
-                };
+            Function<UUID, Collection<UUID>> safeChildren =
+                    g -> {
+                        PlayerGroupDAGGroup gg = dag.groups.get(g);
+                        return gg != null ? gg.children() : Set.of();
+                    };
 
-        Function<UUID, Collection<UUID>> safeChildren =
-                g -> {
-                    PlayerGroupDAGGroup gg = dag.groups.get(g);
-                    return gg != null ? gg.children() : Set.of();
-                };
+            NextProvider safeParentsNext =
+                    g -> {
+                        PlayerGroupDAGGroup gg = dag.groups.get(g);
+                        return gg != null ? gg.parents() : Set.of();
+                    };
 
-        NextProvider safeParentsNext =
-                g -> {
-                    PlayerGroupDAGGroup gg = dag.groups.get(g);
-                    return gg != null ? gg.parents() : Set.of();
-                };
-
-        NextProvider safeChildrenNext =
-                g -> {
-                    PlayerGroupDAGGroup gg = dag.groups.get(g);
-                    return gg != null ? gg.children() : Set.of();
-                };
-        Function<UUID, Collection<String>> safePermissions =
-                g -> {
-                    PlayerGroupDAGGroup gg = dag.groups.get(g);
-                    return gg != null ? gg.permissions() : Set.of();
-                };
-        for (PlayerGroupDAGGroup group : dag.groups.values()) {
-
-            PlayerGroupGroupData old;
+            NextProvider safeChildrenNext =
+                    g -> {
+                        PlayerGroupDAGGroup gg = dag.groups.get(g);
+                        return gg != null ? gg.children() : Set.of();
+                    };
+            Function<UUID, Collection<String>> safePermissions =
+                    g -> {
+                        PlayerGroupDAGGroup gg = dag.groups.get(g);
+                        return gg != null ? gg.permissions() : Set.of();
+                    };
             Map<UUID, PlayerGroupGroupData> flatGroups = flat.groups();
-            if (flatGroups == null) {
-                old = null;
-            } else {
-                if (group.id() == null) {
-                    old = null;
+            PlayerGroupGroupData old = null;
+            for (PlayerGroupDAGGroup group : dag.groups.values()) {
+
+                if (flatGroups != null) {
+                    if (group.id() == null) {
+                        old = null;
+                    } else {
+                        old = flatGroups.get(group.id());
+                    }
+                }
+
+                boolean ancestorsAffected = affected.ancestors().contains(group.id());
+                boolean descendantsAffected = affected.descendants().contains(group.id());
+                boolean membersAffected = affected.directMembers().contains(group.id());
+                boolean permissionsAffected = affected.permissions().contains(group.id());
+                boolean anyAffected = ancestorsAffected || descendantsAffected || membersAffected || permissionsAffected;
+
+                if (!anyAffected && old != null) {
+                    groups.put(group.id(), old);
+                    continue;
+                }
+
+                Set<UUID> ancestors =
+                        ancestorsAffected
+                                ? dfsWithCache(
+                                group.id(),
+                                ancestorsCache,
+                                safeParentsNext,
+                                safeParents
+                        )
+                                : (old != null ? old.ancestors() : Set.of());
+
+                Set<UUID> descendants =
+                        descendantsAffected
+                                ? dfsWithCache(
+                                group.id(),
+                                descendantsCache,
+                                safeChildrenNext,
+                                safeChildren
+                        )
+                                : (old != null ? old.descendants() : Set.of());
+
+                Set<UUID> directMembers =
+                        membersAffected
+                                ? new HashSet<>(group.members())
+                                : (old != null ? old.directMembers() : Set.of());
+
+                Set<String> permissions =
+                        permissionsAffected
+                                ? dfsWithCache(
+                                group.id(),
+                                permissionsCache,
+                                safeParentsNext,
+                                safePermissions
+                        )
+                                : (old != null ? old.permissions() : Set.of());
+
+                groups.put(group.id(), new PlayerGroupGroupData(
+                        group.id(),
+                        group.name(),
+                        ancestors,
+                        descendants,
+                        directMembers,
+                        permissions
+                ));
+            }
+            groupsByName = new HashMap<>(dag.groupsByName);
+            if (affected.directMembers().isEmpty()) {
+                if (affected.playersPermissions().isEmpty()) {
+                    playerData = flat.players();
                 } else {
-                    old = flatGroups.get(group.id());
+                    playerData = PlayerGroupPlayerData.PlayerGroupPlayerDataPlayersPermissions(
+                            dag.players.playersPermissions(),
+                            flat,
+                            affected.playersPermissions()
+                    );
+                }
+            } else {
+                if (affected.playersPermissions().isEmpty()) {
+                    playerData = PlayerGroupPlayerData.PlayerGroupPlayerDataPlayerGroups(
+                            dag.players.playersGroups(),
+                            flat,
+                            affected.directMembers()
+                    );
+                } else {
+                    playerData = PlayerGroupPlayerData.NewPlayerGroupPlayerData(
+                            dag.players.playersGroups(),
+                            dag.players.playersPermissions()
+                    );
                 }
             }
+        } else {
+            groups = flat.groups();
+            groupsByName = flat.groupsByName();
 
-            Set<UUID> ancestors =
-                    affected.ancestors().contains(group.id())
-                            ? dfsWithCache(
-                            group.id(),
-                            ancestorsCache,
-                            safeParentsNext,
-                            safeParents
-                    )
-                            : (old != null ? old.ancestors() : Set.of());
-
-            Set<UUID> descendants =
-                    affected.descendants().contains(group.id())
-                            ? dfsWithCache(
-                            group.id(),
-                            descendantsCache,
-                            safeChildrenNext,
-                            safeChildren
-                    )
-                            : (old != null ? old.descendants() : Set.of());
-
-            Set<UUID> directMembers =
-                    affected.directMembers().contains(group.id())
-                            ? new HashSet<>(group.members())
-                            : (old != null ? old.directMembers() : Set.of());
-
-            Set<String> permissions =
-                    affected.permissions().contains(group.id())
-                            ? dfsWithCache(
-                            group.id(),
-                            permissionsCache,
-                            safeParentsNext,
-                            safePermissions
-                    )
-                            : (old != null ? old.permissions() : Set.of());
-
-            groups.put(group.id(), new PlayerGroupGroupData(
-                    group.id(),
-                    group.name(),
-                    ancestors,
-                    descendants,
-                    directMembers,
-                    permissions
-            ));
+            if (affected.playersPermissions().isEmpty()) {
+                playerData = flat.players();
+            } else {
+                playerData = PlayerGroupPlayerData.PlayerGroupPlayerDataPlayersPermissions(
+                        dag.players.playersPermissions(),
+                        flat,
+                        affected.playersPermissions()
+                );
+            }
         }
 
-        return new PlayerGroupDAGFlat(groups, new HashMap<>(dag.groupsByName), playerData);
+
+        return new PlayerGroupDAGFlat(groups, groupsByName, playerData);
     }
 
     static {
@@ -451,6 +501,10 @@ public final class PlayerGroupDAG {
                         (dag) -> dag.players
                 ).add()
                 .build();
+    }
+
+    public Map<UUID, Set<String>> getPlayerPermissions() {
+        return players.playersPermissions();
     }
 
     private enum VisitType {

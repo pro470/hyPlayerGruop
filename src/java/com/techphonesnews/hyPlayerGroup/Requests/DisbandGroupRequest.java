@@ -4,11 +4,6 @@ import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
 public record DisbandGroupRequest(String name) implements PlayerGroupGroupChangeRequest {
     @Override
     public void apply(PlayerGroupDAG dag) {
@@ -25,15 +20,14 @@ public record DisbandGroupRequest(String name) implements PlayerGroupGroupChange
         return "Disbanding group " + name;
     }
 
-    @Nonnull
     @Override
-    public PlayerGroupAffected affected() {
+    public void affected(PlayerGroupAffected affected) {
         if (HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name) == null)
-            return PlayerGroupAffected.EMPTY;
+            return;
 
-        Set<UUID> children = new HashSet<>(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).descendants());
-        Set<UUID> parents = new HashSet<>(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).ancestors());
-
-        return new PlayerGroupAffected(children, parents, children, Set.of());
+        affected.ancestors().addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).descendants());
+        affected.permissions().addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).descendants());
+        affected.descendants().addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).ancestors());
+        affected.directMembers().add(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).id());
     }
 }
