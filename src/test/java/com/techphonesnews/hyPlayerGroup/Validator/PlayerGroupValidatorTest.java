@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static com.techphonesnews.hyPlayerGroup.Group.PlayerGroupPlayerData.NewPlayerGroupPlayerData;
 import static com.techphonesnews.hyPlayerGroup.Validator.PlayerGroupValidator.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -41,7 +42,7 @@ public class PlayerGroupValidatorTest {
     }
 
     private static PlayerGroupPlayerData emptyPlayers() {
-        return new PlayerGroupPlayerData(
+        return NewPlayerGroupPlayerData(
                 Map.of(),
                 Map.of()
         );
@@ -223,7 +224,7 @@ public class PlayerGroupValidatorTest {
                 Set.of()
         );
 
-        PlayerGroupPlayerData players = new PlayerGroupPlayerData(
+        PlayerGroupPlayerData players = NewPlayerGroupPlayerData(
                 Map.of(),
                 Map.of()
         );
@@ -252,7 +253,7 @@ public class PlayerGroupValidatorTest {
                 Set.of()
         );
 
-        PlayerGroupPlayerData players = new PlayerGroupPlayerData(
+        PlayerGroupPlayerData players = NewPlayerGroupPlayerData(
                 Map.of(playerId, Set.of(groupId)),
                 Map.of()
         );
@@ -300,7 +301,7 @@ public class PlayerGroupValidatorTest {
         PlayerGroupDAGFlat flat = new PlayerGroupDAGFlat(
                 Map.of(a, A, b, B, c, C),
                 Map.of("A", a, "B", b, "C", c),
-                new PlayerGroupPlayerData(Map.of(), Map.of())
+                NewPlayerGroupPlayerData(Map.of(), Map.of())
         );
 
         assertThrows(AssertionError.class, () ->
@@ -340,7 +341,7 @@ public class PlayerGroupValidatorTest {
         PlayerGroupDAGFlat flat = new PlayerGroupDAGFlat(
                 Map.of(a, A, b, B, c, C),
                 Map.of("A", a, "B", b, "C", c),
-                new PlayerGroupPlayerData(Map.of(), Map.of())
+                NewPlayerGroupPlayerData(Map.of(), Map.of())
         );
 
         assertThrows(AssertionError.class, () ->
@@ -380,7 +381,7 @@ public class PlayerGroupValidatorTest {
         PlayerGroupDAGFlat flat = new PlayerGroupDAGFlat(
                 Map.of(a, A, b, B, c, C),
                 Map.of("A", a, "B", b, "C", c),
-                new PlayerGroupPlayerData(Map.of(), Map.of())
+                NewPlayerGroupPlayerData(Map.of(), Map.of())
         );
 
         assertDoesNotThrow(() ->
@@ -401,7 +402,7 @@ public class PlayerGroupValidatorTest {
                 Set.of()
         );
 
-        PlayerGroupPlayerData players = new PlayerGroupPlayerData(
+        PlayerGroupPlayerData players = NewPlayerGroupPlayerData(
                 Map.of(playerId, Set.of(groupId)),
                 Map.of()
         );
@@ -430,7 +431,7 @@ public class PlayerGroupValidatorTest {
                 Set.of()
         );
 
-        PlayerGroupPlayerData players = new PlayerGroupPlayerData(
+        PlayerGroupPlayerData players = NewPlayerGroupPlayerData(
                 Map.of(playerId, Set.of(groupId)),
                 Map.of()
         );
