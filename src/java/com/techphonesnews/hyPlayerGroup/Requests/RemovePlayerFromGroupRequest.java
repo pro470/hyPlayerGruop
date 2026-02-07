@@ -4,12 +4,7 @@ import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.permissions.PlayerGroupEvent;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
-import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupGroupData;
-import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public final class RemovePlayerFromGroupRequest implements PlayerGroupGroupChangeRequest {
@@ -18,6 +13,8 @@ public final class RemovePlayerFromGroupRequest implements PlayerGroupGroupChang
 
     private UUID groupId;
 
+    private Boolean succeeded;
+
     public RemovePlayerFromGroupRequest(UUID player, String group) {
         this.player = player;
         this.group = group;
@@ -25,7 +22,8 @@ public final class RemovePlayerFromGroupRequest implements PlayerGroupGroupChang
 
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.removeMember(group, player);
+        succeeded = dag.removeMember(group, player);
+        if (!succeeded) return;
         groupId = dag.getGroupId(group);
     }
 
@@ -48,5 +46,10 @@ public final class RemovePlayerFromGroupRequest implements PlayerGroupGroupChang
         if (groupId == null)
             return;
         affected.directMembers().add(groupId);
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
     }
 }

@@ -4,6 +4,7 @@ import com.hypixel.hytale.server.core.HytaleServer;
 import com.hypixel.hytale.server.core.event.events.permissions.PlayerGroupEvent;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
+
 import java.util.UUID;
 
 public final class AddPlayerToGroupRequest implements PlayerGroupGroupChangeRequest {
@@ -13,6 +14,8 @@ public final class AddPlayerToGroupRequest implements PlayerGroupGroupChangeRequ
 
     private UUID groupId;
 
+    private Boolean succeeded;
+
     public AddPlayerToGroupRequest(UUID player, String group) {
         this.player = player;
         this.group = group;
@@ -20,9 +23,10 @@ public final class AddPlayerToGroupRequest implements PlayerGroupGroupChangeRequ
 
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.addMember(group, player);
-        groupId = dag.getGroupId(group);
-
+        succeeded = dag.addMember(group, player);
+        if (succeeded) {
+            groupId = dag.getGroupId(group);
+        }
     }
 
     @Override
@@ -43,5 +47,10 @@ public final class AddPlayerToGroupRequest implements PlayerGroupGroupChangeRequ
 
         if (groupId != null)
             affected.directMembers().add(groupId);
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
     }
 }

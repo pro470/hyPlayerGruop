@@ -5,17 +5,22 @@ import com.hypixel.hytale.server.core.event.events.permissions.PlayerPermissionC
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public record RemovePlayerPermissonRequest(UUID player,
-                                           Set<String> permissions) implements PlayerGroupGroupChangeRequest {
+public final class RemovePlayerPermissonRequest implements PlayerGroupGroupChangeRequest {
+    private final UUID player;
+    private final Set<String> permissions;
+    private Boolean succeeded;
+
+    public RemovePlayerPermissonRequest(UUID player, Set<String> permissions) {
+        this.player = player;
+        this.permissions = permissions;
+    }
+
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.removePlayerPermissions(player, permissions);
-
+        succeeded = dag.removePlayerPermissions(player, permissions);
     }
 
     @Override
@@ -38,5 +43,10 @@ public record RemovePlayerPermissonRequest(UUID player,
     @Override
     public void affected(PlayerGroupAffected affected) {
         affected.playersPermissions().add(player);
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
     }
 }

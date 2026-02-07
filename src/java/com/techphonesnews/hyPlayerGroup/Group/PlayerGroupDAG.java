@@ -48,14 +48,15 @@ public final class PlayerGroupDAG {
         return groupsByName.get(name);
     }
 
-    public void removeGroup(String name) {
+    public boolean removeGroup(String name) {
         UUID id = groupsByName.get(name);
         if (id != null) {
-            removeGroup(id);
+            return removeGroup(id);
         }
+        return false;
     }
 
-    public void removeGroup(UUID id) {
+    public boolean removeGroup(UUID id) {
         PlayerGroupDAGGroup group = groups.remove(id);
         if (group != null) {
             groupsByName.remove(group.name());
@@ -77,17 +78,19 @@ public final class PlayerGroupDAG {
                     child.remove(id);
                 }
             }
+            return true;
         }
+        return false;
     }
 
-    public void addMember(String groupName, UUID uuid) {
-        addMember(groupsByName.get(groupName), uuid);
+    public boolean addMember(String groupName, UUID uuid) {
+        return addMember(groupsByName.get(groupName), uuid);
     }
 
-    public void addMember(UUID groupId, UUID uuid) {
+    public boolean addMember(UUID groupId, UUID uuid) {
         PlayerGroupDAGGroup group = groups.get(groupId);
         if (group == null) {
-            return;
+            return false;
         }
         group.addMember(uuid);
         Set<UUID> member = players.playersGroups().get(uuid);
@@ -100,68 +103,72 @@ public final class PlayerGroupDAG {
         } else {
             member.add(groupId);
         }
+        return true;
     }
 
-    public void removeMember(String group, UUID player) {
-        removeMember(groupsByName.get(group), player);
+    public boolean removeMember(String group, UUID player) {
+        return removeMember(groupsByName.get(group), player);
     }
 
-    public void removeMember(UUID groupId, UUID player) {
+    public boolean removeMember(UUID groupId, UUID player) {
         PlayerGroupDAGGroup group = groups.get(groupId);
         if (group == null) {
-            return;
+            return false;
         }
         group.removeMember(player);
         Set<UUID> member = players.playersGroups().get(player);
         if (member != null) {
             member.remove(groupId);
         }
+        return true;
     }
 
-    public void addParent(String ParentName, String ChildName) {
+    public boolean addParent(String ParentName, String ChildName) {
         UUID parentId = groupsByName.get(ParentName);
         UUID childId = groupsByName.get(ChildName);
         if (parentId == null || childId == null) {
-            return;
+            return false;
         }
-        addParent(parentId, childId);
+        return addParent(parentId, childId);
     }
 
-    public void addParent(UUID ParentId, UUID ChildId) {
+    public boolean addParent(UUID ParentId, UUID ChildId) {
         if (ParentId.equals(ChildId)) {
-            return;
+            return false;
         }
 
         if (createsCycle(ParentId, ChildId)) {
-            return;
+            return false;
         }
 
         PlayerGroupDAGGroup parent = groups.get(ParentId);
         PlayerGroupDAGGroup child = groups.get(ChildId);
         if (parent == null || child == null) {
-            return;
+            return false;
         }
         child.addParent(ParentId);
         parent.addChild(ChildId);
+        return true;
     }
 
-    public void removeParent(String parent, String child) {
+    public boolean removeParent(String parent, String child) {
         UUID parentId = groupsByName.get(parent);
         UUID childId = groupsByName.get(child);
         if (parentId == null || childId == null) {
-            return;
+            return false;
         }
-        removeParent(parentId, childId);
+        return removeParent(parentId, childId);
     }
 
-    public void removeParent(UUID parentId, UUID childId) {
+    public boolean removeParent(UUID parentId, UUID childId) {
         PlayerGroupDAGGroup parent = groups.get(parentId);
         PlayerGroupDAGGroup child = groups.get(childId);
         if (parent == null || child == null) {
-            return;
+            return false;
         }
         child.removeParent(parentId);
         parent.removeChild(childId);
+        return true;
     }
 
     public void changeName(UUID id, String name) {
@@ -171,20 +178,21 @@ public final class PlayerGroupDAG {
         groups.get(id).setName(name);
     }
 
-    public void addGroupPermissions(String groupName, Set<String> permissions) {
+    public boolean addGroupPermissions(String groupName, Set<String> permissions) {
         UUID id = groupsByName.get(groupName);
         if (id == null) {
-            return;
+            return false;
         }
-        addGroupPermissions(id, permissions);
+        return addGroupPermissions(id, permissions);
     }
 
-    public void addGroupPermissions(UUID id, Set<String> permissions) {
+    public boolean addGroupPermissions(UUID id, Set<String> permissions) {
         PlayerGroupDAGGroup group = groups.get(id);
         if (group == null) {
-            return;
+            return false;
         }
         group.permissions().addAll(permissions);
+        return true;
     }
 
     public void addPlayerPermissions(UUID player, Set<String> permissions) {
@@ -196,20 +204,21 @@ public final class PlayerGroupDAG {
         }
     }
 
-    public void removeGroupPermissions(String groupName, Set<String> permissions) {
+    public boolean removeGroupPermissions(String groupName, Set<String> permissions) {
         UUID id = groupsByName.get(groupName);
         if (id == null) {
-            return;
+            return false;
         }
-        removeGroupPermissions(id, permissions);
+        return removeGroupPermissions(id, permissions);
     }
 
-    public void removeGroupPermissions(UUID id, Set<String> permissions) {
+    public boolean removeGroupPermissions(UUID id, Set<String> permissions) {
         PlayerGroupDAGGroup group = groups.get(id);
         if (group == null) {
-            return;
+            return false;
         }
         group.permissions().removeAll(permissions);
+        return true;
     }
 
     public Map<UUID, Set<UUID>> getPlayerGroups() {
@@ -220,12 +229,13 @@ public final class PlayerGroupDAG {
         return players.playersPermissions();
     }
 
-    public void removePlayerPermissions(UUID player, Set<String> permissions) {
+    public boolean removePlayerPermissions(UUID player, Set<String> permissions) {
         Set<String> playerperms = players.playersPermissions().get(player);
         if (playerperms == null) {
-            return;
+            return false;
         }
         playerperms.removeAll(permissions);
+        return true;
     }
 
     private Boolean createsCycle(UUID ParentId, UUID ChildId) {
@@ -445,9 +455,12 @@ public final class PlayerGroupDAG {
                             affected.directMembers()
                     );
                 } else {
-                    playerData = PlayerGroupPlayerData.NewPlayerGroupPlayerData(
+                    playerData = PlayerGroupPlayerData.NewPlayerGroupPlayerDataWithCache(
                             dag.players.playersGroups(),
-                            dag.players.playersPermissions()
+                            dag.players.playersPermissions(),
+                            flat,
+                            affected.directMembers(),
+                            affected.playersPermissions()
                     );
                 }
             }

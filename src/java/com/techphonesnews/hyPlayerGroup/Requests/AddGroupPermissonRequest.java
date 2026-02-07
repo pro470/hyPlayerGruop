@@ -6,8 +6,6 @@ import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +17,8 @@ public final class AddGroupPermissonRequest implements PlayerGroupGroupChangeReq
 
     private UUID groupId;
 
+    private Boolean succeeded;
+
     public AddGroupPermissonRequest(String groupName, Set<String> permissions) {
         this.groupName = groupName;
         this.permissions = permissions;
@@ -26,8 +26,10 @@ public final class AddGroupPermissonRequest implements PlayerGroupGroupChangeReq
 
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.addGroupPermissions(groupName, permissions);
-        groupId = dag.getGroupId(groupName);
+        succeeded = dag.addGroupPermissions(groupName, permissions);
+        if (succeeded) {
+            groupId = dag.getGroupId(groupName);
+        }
     }
 
     @Override
@@ -57,5 +59,10 @@ public final class AddGroupPermissonRequest implements PlayerGroupGroupChangeReq
             affected.permissions().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName)).descendants());
 
         }
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
     }
 }
