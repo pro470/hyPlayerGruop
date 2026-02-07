@@ -22,4 +22,9 @@ public record TestSuccesfulBuildFlatRequest() implements PlayerGroupGroupChangeR
     @Override
     public void affected(PlayerGroupAffected affected) {
     }
+
+    @Override
+    public Boolean succeeded() {
+        return true;
+    }
 }
