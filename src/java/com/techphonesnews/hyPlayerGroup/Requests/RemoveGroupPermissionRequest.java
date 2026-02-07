@@ -17,6 +17,8 @@ public final class RemoveGroupPermissionRequest implements PlayerGroupGroupChang
 
     private UUID groupId;
 
+    private Boolean succeeded;
+
     public RemoveGroupPermissionRequest(String groupName, Set<String> permissions) {
         this.groupName = groupName;
         this.permissions = permissions;
@@ -24,7 +26,8 @@ public final class RemoveGroupPermissionRequest implements PlayerGroupGroupChang
 
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.removeGroupPermissions(groupName, permissions);
+        succeeded = dag.removeGroupPermissions(groupName, permissions);
+        if (!succeeded) return;
         groupId = dag.getGroupId(groupName);
     }
 
@@ -55,5 +58,10 @@ public final class RemoveGroupPermissionRequest implements PlayerGroupGroupChang
             affected.permissions().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(groupName)).descendants());
 
         }
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
     }
 }

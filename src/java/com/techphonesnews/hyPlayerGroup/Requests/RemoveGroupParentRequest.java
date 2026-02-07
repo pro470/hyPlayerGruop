@@ -4,20 +4,18 @@ import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 public final class RemoveGroupParentRequest implements PlayerGroupGroupChangeRequest {
 
     private final String Parent;
-
     private final String Child;
 
     private UUID parentId;
     private UUID childId;
+
+    Boolean succeeded;
 
     public RemoveGroupParentRequest(String Parent, String Child) {
         this.Parent = Parent;
@@ -26,7 +24,8 @@ public final class RemoveGroupParentRequest implements PlayerGroupGroupChangeReq
 
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.removeParent(Parent, Child);
+        succeeded = dag.removeParent(Parent, Child);
+        if (!succeeded) return;
         parentId = dag.getGroupId(Parent);
         childId = dag.getGroupId(Child);
     }
@@ -58,5 +57,10 @@ public final class RemoveGroupParentRequest implements PlayerGroupGroupChangeReq
             affected.ancestors().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child)).descendants());
             affected.permissions().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child)).descendants());
         }
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
     }
 }

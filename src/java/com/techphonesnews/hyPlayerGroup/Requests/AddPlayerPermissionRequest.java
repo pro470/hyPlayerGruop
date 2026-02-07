@@ -5,8 +5,6 @@ import com.hypixel.hytale.server.core.event.events.permissions.PlayerPermissionC
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -37,5 +35,10 @@ public record AddPlayerPermissionRequest(UUID player,
     @Override
     public void affected(PlayerGroupAffected affected) {
         affected.playersPermissions().add(player);
+    }
+
+    @Override
+    public Boolean succeeded() {
+        return true;
     }
 }

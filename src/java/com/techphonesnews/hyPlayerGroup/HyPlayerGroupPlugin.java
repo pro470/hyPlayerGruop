@@ -135,8 +135,10 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
                                         while (!queue.isEmpty()) {
                                             PlayerGroupGroupChangeRequest request = queue.poll();
                                             request.apply(dag.get());
-                                            request.affected(affected);
-                                            requests.add(request);
+                                            if (request.succeeded()) {
+                                                request.affected(affected);
+                                                requests.add(request);
+                                            }
                                         }
 
                                         PlayerGroupDAGFlat bFlat = PlayerGroupDAG.buildFlat(dag.get(), dagFlat.get(), affected);
@@ -195,7 +197,6 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
 
                 Files.createDirectories(panicDir);
 
-                // 1️⃣ DAG snapshot (write-only)
                 BsonUtil.writeDocument(
                         panicDir.resolve("dag.json"),
                         PlayerGroupDAG.CODEC.encode(dag, new ExtraInfo())
@@ -207,13 +208,11 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
 
                 requests.clear();
 
-                // 3️⃣ Requests
                 Files.write(
                         panicDir.resolve("requests.log"),
                         debugMessages
                 );
 
-                // 5️⃣ Error
                 Files.writeString(
                         panicDir.resolve("error.txt"),
                         error.toString()

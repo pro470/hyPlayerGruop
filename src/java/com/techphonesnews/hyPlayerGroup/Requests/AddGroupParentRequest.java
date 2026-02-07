@@ -4,20 +4,18 @@ import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupAffected;
 import com.techphonesnews.hyPlayerGroup.Group.PlayerGroupDAG;
 import com.techphonesnews.hyPlayerGroup.HyPlayerGroupPlugin;
 
-import javax.annotation.Nonnull;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 public final class AddGroupParentRequest implements PlayerGroupGroupChangeRequest {
 
     private final String Parent;
-
     private final String Child;
 
     private UUID parentId;
     private UUID childId;
+
+    private Boolean succeeded;
 
     public AddGroupParentRequest(String Parent, String Child) {
         this.Parent = Parent;
@@ -26,9 +24,11 @@ public final class AddGroupParentRequest implements PlayerGroupGroupChangeReques
 
     @Override
     public void apply(PlayerGroupDAG dag) {
-        dag.addParent(Parent, Child);
-        parentId = dag.getGroupId(Parent);
-        childId = dag.getGroupId(Child);
+        succeeded = dag.addParent(Parent, Child);
+        if (succeeded) {
+            parentId = dag.getGroupId(Parent);
+            childId = dag.getGroupId(Child);
+        }
     }
 
     @Override
@@ -59,4 +59,10 @@ public final class AddGroupParentRequest implements PlayerGroupGroupChangeReques
             affected.permissions().addAll(Objects.requireNonNull(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(Child)).descendants());
         }
     }
+
+    @Override
+    public Boolean succeeded() {
+        return succeeded;
+    }
+
 }
