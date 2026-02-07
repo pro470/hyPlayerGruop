@@ -30,4 +30,8 @@ public record DisbandGroupRequest(String name) implements PlayerGroupGroupChange
         affected.descendants().addAll(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).ancestors());
         affected.directMembers().add(HyPlayerGroupPlugin.get().getDAGFlat().getGroup(name).id());
     }
+
+    public String getName() {
+        return name;
+    }
 }

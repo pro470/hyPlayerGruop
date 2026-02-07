@@ -57,13 +57,14 @@ public final class PlayerGroupSimulationSystem
             queue.add(req);
 
             // Feedback NACH dem Erzeugen
-            if (req instanceof CreateGroupRequest(String name)) {
-                state.onGroupCreated(name);
+            if (req instanceof CreateGroupRequest) {
+                state.onGroupCreated(((CreateGroupRequest) req).getName());
             }
 
-            if (req instanceof DisbandGroupRequest(String name)) {
-                state.onGroupDisbandAttempt(name);
+            if (req instanceof DisbandGroupRequest) {
+                state.onGroupDisbandAttempt(((DisbandGroupRequest) req).getName());
             }
         }
+        state.rebalanceKnownGroups();
     }
 }

@@ -26,4 +26,8 @@ public record CreateGroupRequest(String name) implements PlayerGroupGroupChangeR
     @Override
     public void affected(PlayerGroupAffected affected) {
     }
+
+    public String getName() {
+        return name;
+    }
 }

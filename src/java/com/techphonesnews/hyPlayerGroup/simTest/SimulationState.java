@@ -46,7 +46,7 @@ public final class SimulationState {
         rebalanceKnownGroups();
     }
 
-    private void rebalanceKnownGroups() {
+    void rebalanceKnownGroups() {
         int maxKnown = maxKnownGroups();
 
         while (knownGroups.size() > maxKnown) {
