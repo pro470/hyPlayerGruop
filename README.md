@@ -43,8 +43,7 @@ Yes, that’s on purpose, because I want the user of this plugin, mod, or howeve
 because if you have a TickingSystem that runs every tick, it should correct itself in the next tick. There is no need to
 block the world thread.
 
-I should also mention that you only block the thread you called the methods. Other world threads just run without
-blocking.
+I should also mention that you only block the thread you called the methods. Other world threads just run without blocking. So every thread decides by itself.  If it wants to wait for the changes.
 
 ### How to wait
 
