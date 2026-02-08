@@ -34,7 +34,8 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
     private final Config<PlayerGroupDAG> dag;
     private final ConcurrentLinkedQueue<PlayerGroupGroupChangeRequest> queue = new ConcurrentLinkedQueue<>();
     private final Path dataDirectory;
-    private CompletableFuture<FinishedBuild> buildingDAGFlat;
+    private volatile CompletableFuture<FinishedBuild> buildingDAGFlat;
+    private volatile CompletableFuture<PlayerGroupPubAffected> pubAffected;
 
     public final PlayerGroupPermissionsProvider provider = new PlayerGroupPermissionsProvider(dagFlat, queue);
 
@@ -91,6 +92,18 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
         return buildingDAGFlat.join().flat;
     }
 
+    public PlayerGroupPubAffected getAffected() {
+        if (isBuildingDAGFlat()) {
+            if (pubAffected == null) {
+                while (pubAffected == null) {
+                    Thread.onSpinWait();
+                }
+            }
+            return pubAffected.join();
+        }
+        return null;
+    }
+
     public PlayerGroupDAGFlat ifNewWaitOnBuildingDAGFlat() {
         if (isBuildingDAGFlat()) {
             return getNewBuildingDAGFlat();
@@ -132,6 +145,8 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
                             SneakyThrow.sneakySupplier(
                                     () -> {
                                         PlayerGroupAffected affected = new PlayerGroupAffected(new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
+                                        CompletableFuture<PlayerGroupPubAffected> AffectedDone = new CompletableFuture<>();
+                                        pubAffected = AffectedDone;
                                         while (!queue.isEmpty()) {
                                             PlayerGroupGroupChangeRequest request = queue.poll();
                                             request.apply(dag.get());
@@ -140,6 +155,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
                                                 requests.add(request);
                                             }
                                         }
+                                        AffectedDone.complete(new PlayerGroupPubAffected(affected));
 
                                         PlayerGroupDAGFlat bFlat = PlayerGroupDAG.buildFlat(dag.get(), dagFlat.get(), affected);
                                         dagFlat.set(bFlat);
@@ -181,7 +197,7 @@ public class HyPlayerGroupPlugin extends JavaPlugin {
 
         }
 
-        public static void panicform(
+        private static void panicform(
                 Throwable error,
                 PlayerGroupDAG dag,
                 Path dataDirectory,
