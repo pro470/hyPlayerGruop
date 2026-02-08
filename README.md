@@ -14,8 +14,10 @@ implements PermissionProvider is added to the PermissionModule Providers list. S
 PermissionModule and PlayerRef will also check HyPlayerGroup Permissions.
 
 If you want to add permission to a Group or Player, you can get the provider with `getProvider`. The PermissionModule
-does not work at the moment. Hytale didn't add an option for that yet, but we sent all groups and permissions events
-from Hytale.
+does not work at the moment, because the default Provider is still HytalePermissionsProvider. I left it on the default
+on purpose, because the Hytale Permission system is for server management and admins, and the HyPlayerGroup is for the
+players. Hytale didn't add an option to choose a provider for the methods that change data yet, but we sent all groups
+and permissions events from Hytale.
 
 For the creation, disband, and all parent events, we will send our own events because Hytale does not send such events.
 
@@ -43,7 +45,8 @@ Yes, that’s on purpose, because I want the user of this plugin, mod, or howeve
 because if you have a TickingSystem that runs every tick, it should correct itself in the next tick. There is no need to
 block the world thread.
 
-I should also mention that you only block the thread you called the methods. Other world threads just run without blocking. So every thread decides by itself.  If it wants to wait for the changes.
+I should also mention that you only block the thread you called the methods. Other world threads just run without
+blocking. So every thread decides by itself. If it wants to wait for the changes.
 
 ### How to wait
 
