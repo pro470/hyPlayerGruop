@@ -43,6 +43,9 @@ Yes, that’s on purpose, because I want the user of this plugin, mod, or howeve
 because if you have a TickingSystem that runs every tick, it should correct itself in the next tick. There is no need to
 block the world thread.
 
+I should also mention that you only block the thread you called the methods. Other world threads just run without
+blocking.
+
 ### How to wait
 
 If you need to wait for consistent data, there is a method, `ifNewWaitOnBuildingDAGFlat`.
