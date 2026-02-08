@@ -57,6 +57,9 @@ HyPlayerGroupPlugin:
 methods:
 
 ```Java
+
+public static HyPlayerGroupPlugin get();
+
 public PlayerGroupPermissionsProvider getProvider();
 
 public PlayerGroupDAGFlat getDagFlat();
